@@ -50,6 +50,13 @@ Voxion is designed to "Act", not just "Talk". Through NestJS Services, we can pl
 *   **CRM Tool**: Sync call logs directly to Salesforce/Zoho.
 *   **Action Engine**: Automatically extract tasks and register them in the `Follow-ups` table.
 
+### 🧠 AI Analytics & Intelligence Layer
+Voxion is designed as a **Predictive Intelligence Engine**, not just a conversational tool.
+1.  **Lead Scoring Prediction**: Based on intent-discovery keywords, the engine predicts the "Probability of Sale" for each caller.
+2.  **Sentiment Drift Analysis**: Tracks the delta between the start and end of a call to predict "Customer Success Satisfaction" without a survey.
+3.  **Trend Clustering**: Automates the categorizing of "Why are people calling?" for daily batch reports.
+4.  **Action Forecasting**: Pre-emptively identifies a follow-up action before the user explicitly requests one, reducing call duration.
+
 ---
 
 ## 5. Rationale: Why this Architecture?
