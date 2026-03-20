@@ -3,7 +3,7 @@ services:
   - type: web
     name: voxion-backend
     runtime: node
-    plan: starter # Optimized for AI/WebSocket workloads
+    plan: starter
     buildCommand: npm install && npm run build --workspace=apps/backend
     startCommand: node apps/backend/dist/main
     envVars:
@@ -12,10 +12,9 @@ services:
       - key: PORT
         value: 3001
       - key: OPENAI_API_KEY
-        sync: false # Set manually in Render Dashboard
+        sync: false
       - key: ENCRYPTION_KEY
-        sync: false # Set manually in Render Dashboard
+        sync: false
       - key: DATABASE_URL
-        sync: false # Set manually in Render Dashboard
+        sync: false
     healthCheckPath: /
-    rootContext: .
