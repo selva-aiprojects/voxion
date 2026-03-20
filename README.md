@@ -1,46 +1,53 @@
-# 📞 AI Voice Call Assistant Platform (Vapi Engine)
+# 🎙️ Voxion AI Voice Infrastructure
 
-This is an enterprise-grade AI Voice Call Assistant platform that answers phone calls, understands caller intent, and generates structured actions with follow-up workflows.
+**Voxion** is a production-grade, sub-second latency AI Voice Engine designed for enterprise-scale customer support and personal assistant automation. 
 
-## 🏗 Project Structure
+Build, test, and deploy ultra-realistic AI voice assistants that handle real-world logic, CRM synchronization, and automated follow-up extraction.
 
-- `apps/backend`: NestJS API & AI Orchestration layer.
-- `apps/dashboard`: Next.js web dashboard for data visualization and management.
-- `packages/common`: Shared TypeScript interfaces and types.
-- `packages/database`: Drizzle ORM schema and database configuration.
-- `docs/`: Product Requirements and Technical Documentation.
+---
 
-## 🚀 Getting Started
+## 🚀 One-Click Deployment (Render)
 
-### Prerequisites
-- Node.js (v18 or higher)
-- Docker (for PostgreSQL)
-- OpenAI API Key (or AWS Bedrock credentials)
-- Deepgram API Key (for STT)
-- ElevenLabs API Key (for TTS)
+Voxion is optimized for **Render**. You can deploy the backend engine immediately using the pre-configured `render.yaml` blueprint.
 
-### Installation
+### 📍 Steps to Deploy:
+1.  **Fork/Clone** this repository to your GitHub.
+2.  Log in to your **[Render Dashboard](https://dashboard.render.com/)**.
+3.  Click **New +** -> **Blueprint**.
+4.  Select this repository.
+5.  **Configure Environment Variables**:
+    *   `OPENAI_API_KEY`: Your (encrypted or raw) OpenAI key.
+    *   `ENCRYPTION_KEY`: A 32-character string for secure API key storage.
+    *   `DATABASE_URL`: Your PostgreSQL connection string (Railway, Supabase, or Render DB).
+6.  **Deploy!** Your API & WebSocket engine will be live in minutes.
 
-1. Install dependencies from the root:
-   ```bash
-   npm install
-   ```
+---
 
-2. Setup environment variables (coming soon).
+## 🏗 Project Architecture (Monorepo)
 
-3. Run in development mode:
-   ```bash
-   npm run dev
-   ```
+- **`apps/backend`**: NestJS Assistant Orchestration (STT -> LLM -> TTS -> Functional Tools).
+- **`apps/dashboard`**: Next.js 15 Enterprise Console (Real-time Diagnostic HUD & Analytics).
+- **`packages/database`**: Optimized Drizzle ORM schema for Phone Interaction Logs & Actions.
+- **`packages/common`**: Shared TypeScript contracts for zero-latency communication.
 
-## 🛠 Features
+---
 
-- **Personal Mode**: AI call screening and summaries.
-- **Organization Mode**: Multi-tenant routing and CRM integrations.
-- **Real-time AI**: Sub-2s latency using WebSocket streaming.
-- **Action Extraction**: Structured JSON output for automated follow-ups.
+## 🛠 Features (Standard Enterprise)
+
+- **Sub-Second RTT**: High-performance WebSocket clustering for human-like response speeds.
+- **Multimodal Intelligence**: GPT-4o powered reasoning and automated lead identification.
+- **Action Extraction**: Business-critical task extraction (e.g., "High Priority Callback").
+- **Voice Selection**: Professional human profiles (Voxion-Alloy, Aria, Indigo).
+- **Diagnostic Console**: Real-time latency tracking and stream diagnostics.
+
+---
 
 ## 📄 Documentation
 
-- [Product Requirements (PRD)](./docs/Enterprise_AI_Call_Assistant_PRD.md)
-- [Development Plan](./docs/development_plan.md) (Work in Progress)
+- **[Intelligence Progress Tracker](./docs/progress.md)**: Real-time status of completion.
+- **[Voice Infrastructure PRD](./docs/Enterprise_AI_Call_Assistant_PRD.md)**: Full enterprise requirements.
+
+---
+
+## ⚖️ License
+Enterprise Evaluation License. &copy; 2026 Voxion AI Intelligence.
