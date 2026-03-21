@@ -84,8 +84,8 @@ export default function Dashboard() {
       {/* Sidebar */}
       <div className="w-64 border-r border-slate-200 bg-[#0f172a] text-slate-400 flex flex-col pt-8 z-20">
         <div className="px-8 mb-12 flex items-center gap-3">
-            <div className="w-8 h-8 rounded-lg bg-indigo-500 flex items-center justify-center text-white font-black text-xl shadow-lg shadow-indigo-500/20">V</div>
-            <span className="text-white font-bold tracking-tight text-xl italic uppercase">Voxion</span>
+            <img src="/logo.png" alt="Voxion Logo" className="w-8 h-8 rounded-lg shadow-lg shadow-indigo-500/20" />
+            <span className="text-white font-bold tracking-tight text-xl italic uppercase font-sans">Voxion</span>
         </div>
         <nav className="flex-1 px-4 space-y-1">
           {[

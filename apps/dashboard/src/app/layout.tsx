@@ -15,6 +15,10 @@ const geistMono = Geist_Mono({
 export const metadata: Metadata = {
   title: "Voxion - Enterprise Voice AI Engine",
   description: "Real-time AI Voice infrastructure for sub-second latency STT, LLM, and TTS orchestration.",
+  icons: {
+    icon: "/favicon.png",
+    apple: "/logo.png",
+  },
 };
 
 export default function RootLayout({
