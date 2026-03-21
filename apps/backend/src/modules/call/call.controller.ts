@@ -16,8 +16,13 @@ export class CallController {
 
   @Post('twilio')
   async handleTwilio(@Body() body: any) {
+    const callerNumber = body.From || '';
+    const bossNumber = process.env.BOSS_PHONE_NUMBER || '+918825492600';
+    const isBoss = callerNumber.includes(bossNumber.replace('+', ''));
+
     const callerText = body.SpeechResult || "Hello?";
-    const aiResponse = await this.ai.processCall(`[Secretary Context] Incoming Call from ${body.From}. Caller says: ${callerText}`);
+    const context = isBoss ? "The Boss is calling." : `Incoming Call from ${callerNumber}.`;
+    const aiResponse = await this.ai.processCall(`[Secretary Context] ${context} Caller says: ${callerText}`, isBoss);
 
     // Generate TwiML (XML) for real phone responses
     return `<?xml version="1.0" encoding="UTF-8"?>

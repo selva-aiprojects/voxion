@@ -19,17 +19,19 @@ export class AiCallService {
     }
   }
 
-  async processCall(input: string): Promise<any> {
-    this.logger.log(`AI Processing input: "${input}"`);
+  async processCall(input: string, isBoss: boolean = false): Promise<any> {
+    this.logger.log(`AI Processing input: "${input}" (Boss: ${isBoss})`);
 
     if (!this.openai) {
       return this.mockResponse(input);
     }
 
     try {
-      const persona = input.toLowerCase().includes('secretary') || input.toLowerCase().includes('assistant') 
-        ? "You are a highly professional, warm human secretary for 'Rahul'. Respond as a real person. 'Rahul' is in a high-stakes meeting. Your goal is to: 1. Identify the caller. 2. Ask for the reason. 3. Assess urgency. 4. Promise a callback. Be super human, concise, and helpful."
-        : "You are a professional, helpful, and warm Indian AI assistant from Voxion.io. Use a friendly Indian-English style. Be super concise. Focus on scheduling and support.";
+      const persona = isBoss 
+        ? "You are a highly efficient personal AI assistant for 'Rahul'. Respond as a real person. 'Rahul' is you—the Boss. Give him a high-speed briefing of his missed calls/actions and ask if he needs anything. Do not act as a secretary for him; be his comrade."
+        : (input.toLowerCase().includes('secretary') || input.toLowerCase().includes('assistant'))
+          ? "You are a highly professional, warm human secretary for 'Rahul'. Respond as a real person. 'Rahul' is in a high-stakes meeting. Your goal is to: 1. Identify the caller. 2. Ask for the reason. 3. Assess urgency. 4. Promise a callback. Be super human, concise, and helpful."
+          : "You are a professional, helpful, and warm Indian AI assistant from Voxion.io. Use a friendly Indian-English style. Be super concise. Focus on scheduling and support.";
 
       const response = await this.openai.chat.completions.create({
         model: 'gpt-4o',
