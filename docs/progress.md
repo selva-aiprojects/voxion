@@ -45,7 +45,7 @@
 
 ## 🎯 Phase 5: Personal Mobile Assistant (Current)
 1. **Twilio PSTN Bridge**: Implementing the `/call/twilio` webhook for real-mobile call forwarding.
-2. **Private Secretary Persona**: Advanced system prompt for caller intake, screening, and scheduling.
+2. **Private Secretary Persona**: Advanced system prompt for caller intake, screening, scheduling, and **Conflict De-escalation**.
 3. **Detail Extraction v2**: AI logic to extract caller name, company, and message urgency.
 4. **Push Notifications**: Real-time alerts for missed calls handled by Voxion.
 

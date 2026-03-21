@@ -100,6 +100,7 @@ Voxion is not just an API; it's a **Private Executive Assistant** that bridges t
 3.  **Intelligent Screening**:
     *   **Identity Check**: Extracts caller name, company, and phone number.
     *   **Urgency Sorting**: Determines if the call should be "Filtered" (Spam/General) or "Priority" (Emergency/Deal-critical).
+    *   **Conflict Resolution**: De-escalates frustrated or aggressive callers using calm, empathetic, and firm professional language.
     *   **Autonomous Response**: Answers common queries (office location, availability) without human intervention.
 4.  **Instant Summary Hand-off**: The moment the call ends, a **Structured Intelligence Log** is pushed to the dashboard and your notification engine.
 
