@@ -24,7 +24,8 @@ export default function Dashboard() {
   const [actions, setActions] = useState<any[]>([]);
 
   useEffect(() => {
-    socketRef.current = io('http://localhost:3001/call', { transports: ['websocket'] });
+    const apiUrl = process.env.NEXT_PUBLIC_VOXION_API_URL || 'http://localhost:3001';
+    socketRef.current = io(`${apiUrl}/call`, { transports: ['websocket'] });
     socketRef.current.on('connect', () => setCallStatus('Node Online'));
 
     socketRef.current.on('call-ready', (data) => {
@@ -59,8 +60,8 @@ export default function Dashboard() {
 
   useEffect(() => { chatEndRef.current?.scrollIntoView({ behavior: 'smooth' }); }, [transcription]);
 
-  const fetchLogs = async () => { try { const res = await fetch('http://localhost:3001/call/logs'); setLogs(await res.json()); } catch (e) { console.error(e); } };
-  const fetchActions = async () => { try { const res = await fetch('http://localhost:3001/call/actions'); setActions(await res.json()); } catch (e) { console.error(e); } };
+  const fetchLogs = async () => { try { const apiUrl = process.env.NEXT_PUBLIC_VOXION_API_URL || 'http://localhost:3001'; const res = await fetch(`${apiUrl}/call/logs`); setLogs(await res.json()); } catch (e) { console.error(e); } };
+  const fetchActions = async () => { try { const apiUrl = process.env.NEXT_PUBLIC_VOXION_API_URL || 'http://localhost:3001'; const res = await fetch(`${apiUrl}/call/actions`); setActions(await res.json()); } catch (e) { console.error(e); } };
   
   const startRecording = async () => {
     try {
