@@ -14,6 +14,22 @@ export class CallController {
     return await this.ai.processCall(body.text);
   }
 
+  @Post('twilio')
+  async handleTwilio(@Body() body: any) {
+    const callerText = body.SpeechResult || "Hello?";
+    const aiResponse = await this.ai.processCall(`[Secretary Context] Incoming Call from ${body.From}. Caller says: ${callerText}`);
+
+    // Generate TwiML (XML) for real phone responses
+    return `<?xml version="1.0" encoding="UTF-8"?>
+    <Response>
+        <Say voice="Polly.Aditi-Neural">${aiResponse.response}</Say>
+        <Gather input="speech" action="/call/twilio" method="POST" timeout="3">
+            <Say>I'm listening. Please continue.</Say>
+        </Gather>
+        <Redirect>/call/twilio</Redirect>
+    </Response>`;
+  }
+
   @Get('logs')
   async getLogs() {
     return await this.db.getAllCalls();

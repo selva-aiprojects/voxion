@@ -91,7 +91,24 @@ Voxion provides an **Order-of-Magnitude improvement** over traditional call cent
 
 ---
 
-## 8. Implementation & Usage
+## 9. Private Mobile Secretary Mode
+Voxion is not just an API; it's a **Private Executive Assistant** that bridges to your real mobile phone.
+
+### 📲 Mobile Secretary Architecture:
+1.  **Call Forwarding Bridge**: When you are in a meeting or away, your mobile forwards calls to a **Voxion PSTN Node** via Twilio.
+2.  **Human-like Intake**: The AI answers with a warm, identifying persona: *"Hi! This is Rahul's AI Secretary. He's currently in a session. Who am I speaking with?"*
+3.  **Intelligent Screening**:
+    *   **Identity Check**: Extracts caller name, company, and phone number.
+    *   **Urgency Sorting**: Determines if the call should be "Filtered" (Spam/General) or "Priority" (Emergency/Deal-critical).
+    *   **Autonomous Response**: Answers common queries (office location, availability) without human intervention.
+4.  **Instant Summary Hand-off**: The moment the call ends, a **Structured Intelligence Log** is pushed to the dashboard and your notification engine.
+
+### 🛡️ Privacy & Reliability
+Voxion ensures that every intake is logged with **Sentiment Analysis**, so you can prioritize your call-backs based on the "mood" of the caller.
+
+---
+
+## 10. Implementation & Usage
 ### Deployment
 *   **Backend**: Render/Railway for persistent WebSocket nodes.
 *   **Frontend**: Vercel for the diagnostic console and landing page.

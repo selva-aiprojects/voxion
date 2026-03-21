@@ -39,9 +39,15 @@
 
 ## 🎯 Phase 4: Enterprise Expansion (Current)
 1. **AI Function Calling (Tool Use)**: Connect Voxion to external Support Models (Zendesk/Zoho/Custom API).
-2. **PSTN/Telephony Integration**: Connecting Voxion to real phone numbers via Twilio Media Streams.
-3. **Personal Assistant Logic**: "Busy-wait" answering mode and "Active Secretary" outbound scheduling.
-4. **CRM Synchronization**: Automated lead registration from phone calls into enterprise CRMs.
+2. **CRM Synchronization**: Automated lead registration from phone calls into enterprise CRMs.
+
+---
+
+## 🎯 Phase 5: Personal Mobile Assistant (Current)
+1. **Twilio PSTN Bridge**: Implementing the `/call/twilio` webhook for real-mobile call forwarding.
+2. **Private Secretary Persona**: Advanced system prompt for caller intake, screening, and scheduling.
+3. **Detail Extraction v2**: AI logic to extract caller name, company, and message urgency.
+4. **Push Notifications**: Real-time alerts for missed calls handled by Voxion.
 
 ---
 
