@@ -104,8 +104,9 @@ export class CallController {
     const aiResponse = await this.ai.processCall(contextInput, isBoss);
     this.db.recordTurn(callId, { speaker: 'ASSISTANT', content: aiResponse.response });
 
-    // OMNI-KEY JSON: Providing every possible key Exotel might look for across versions/regions
-    return {
+    // WRAPPED & OMNI-KEY: Sending every possible schema (Flat, Parameters, and Custom shells)
+    const payload = {
+      "Status": 200,
       "gather_prompt": { "text": aiResponse.response },
       "Prompt": aiResponse.response,
       "max_input_digits": 10,
@@ -115,6 +116,12 @@ export class CallController {
       "finish_key": "#",
       "FinishKey": "#",
       "action": "gather"
+    };
+
+    return {
+      ...payload,
+      "Parameters": payload,
+      "Custom": payload
     };
   }
 
@@ -128,7 +135,8 @@ export class CallController {
     this.logger.log(`📢 EXOTEL DYNAMIC GET HIT!`);
     const intro = "Thanks for calling, I will connect you to AI Assistant";
     
-    return {
+    const payload = {
+      "Status": 200,
       "gather_prompt": { "text": intro },
       "Prompt": intro,
       "max_input_digits": 10,
@@ -138,6 +146,12 @@ export class CallController {
       "finish_key": "#",
       "FinishKey": "#",
       "action": "gather"
+    };
+
+    return {
+      ...payload,
+      "Parameters": payload,
+      "Custom": payload
     };
   }
 
