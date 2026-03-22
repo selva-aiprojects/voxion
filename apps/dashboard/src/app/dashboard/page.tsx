@@ -105,12 +105,23 @@ export default function Dashboard() {
       <div className="flex-1 flex flex-col bg-slate-50">
         <header className="h-20 border-b border-slate-200 bg-white/80 backdrop-blur-sm px-10 flex items-center justify-between z-10">
             <div>
-                <h1 className="text-xs font-black text-slate-400 uppercase tracking-widest leading-none mb-1">{activeView.replace('-', ' ')} Control</h1>
-                <p className="text-lg font-bold text-slate-900">Voxion Assistant_v1.4</p>
+                <h1 className="text-xs font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Command Control</h1>
+                <p className="text-lg font-bold text-slate-900">Voxion AI Engine_v2.0</p>
+            </div>
+            {/* Intelligence Bar */}
+            <div className="flex gap-8 items-center mr-10">
+              <div className="text-center"><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">CSAT</p><p className="text-sm font-black text-green-600">4.9/5</p></div>
+              <div className="w-px h-8 bg-slate-100"></div>
+              <div className="text-center"><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Lead Score</p><p className="text-sm font-black text-indigo-600">92%</p></div>
+              <div className="w-px h-8 bg-slate-100"></div>
+              <div className="text-center"><p className="text-[10px] font-black text-slate-400 uppercase tracking-widest">Latency</p><p className="text-sm font-black text-cyan-600">{latency}</p></div>
             </div>
             <div className="flex gap-4">
                 <button onClick={fetchLogs} className="p-2.5 bg-slate-50 border border-slate-200 rounded-xl text-slate-500 hover:text-slate-900 shadow-sm transition-all"><svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg></button>
-                <button className="px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-sm shadow-xl shadow-indigo-600/20 active:scale-95 transition-all">Publish Logic</button>
+                <div className="flex items-center gap-2 group cursor-pointer px-6 py-2.5 bg-indigo-600 text-white rounded-xl font-bold text-sm shadow-xl shadow-indigo-600/20 active:scale-95 transition-all">
+                  <span>Go Live</span>
+                  <div className="w-1.5 h-1.5 rounded-full bg-white animate-pulse"></div>
+                </div>
             </div>
         </header>
 
@@ -151,14 +162,17 @@ export default function Dashboard() {
                 </div>
 
                 {/* Console Sidebar */}
-                <div className="w-[480px] flex flex-col bg-[#0f172a] rounded-[40px] overflow-hidden shadow-2xl relative border-8 border-white/5">
-                    {!isCalling ? (
-                      <div className="flex-1 flex flex-col items-center justify-center p-14 text-center">
-                        <div className="w-24 h-24 rounded-3xl bg-indigo-600 flex items-center justify-center mb-10 shadow-2xl shadow-indigo-600/40 text-white font-black text-3xl">V</div>
-                        <h3 className="text-2xl font-black text-white mb-4 tracking-tight">Voxion Simulation Live</h3>
-                        <p className="text-sm text-slate-400 mb-10 leading-relaxed font-medium">Initialize real-time conversation stream with sub-second latency.</p>
-                        <button onClick={deployCall} className="w-full py-5 bg-indigo-600 rounded-2xl text-white font-black text-sm hover:bg-indigo-500 active:scale-95 shadow-xl transition-all uppercase tracking-widest">Begin Test Session</button>
-                      </div>
+                <div className="w-[480px] flex flex-col bg-slate-950 rounded-[40px] overflow-hidden shadow-2xl relative border-8 border-slate-900">
++                    <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-transparent pointer-events-none"></div>
+                     {!isCalling ? (
+                       <div className="flex-1 flex flex-col items-center justify-center p-14 text-center z-10">
+                         <div className="w-24 h-24 rounded-3xl bg-indigo-600 flex items-center justify-center mb-10 shadow-2xl shadow-indigo-600/40 text-white font-black text-3xl">
+                           <img src="/logo.png" className="w-12 h-12 invert brightness-200" alt="Logo" />
+                         </div>
+                         <h3 className="text-2xl font-black text-white mb-4 tracking-tight">Voxion Neural Core</h3>
+                         <p className="text-sm text-slate-400 mb-10 leading-relaxed font-medium">Initialize the sub-second latency telephony bridge for live intake.</p>
+                         <button onClick={deployCall} className="w-full py-5 bg-indigo-600 rounded-2xl text-white font-black text-sm hover:bg-indigo-500 active:scale-95 shadow-2xl shadow-indigo-600/20 transition-all uppercase tracking-widest">Connect to Network</button>
+                       </div>
                     ) : (
                       <div className="flex-1 flex flex-col p-8 h-full relative">
                         <div className="flex items-center justify-between mb-8 pb-4 border-b border-white/5">
