@@ -6,11 +6,32 @@ import { PersistenceService } from './persistence.service';
 @Controller('call')
 export class CallController {
   private readonly logger = new Logger('CallController');
+  private static readonly history: any[] = []; 
 
   constructor(
     private readonly ai: AiCallService,
     private readonly db: PersistenceService
   ) {}
+
+  @Get('inspector')
+  async inspector() {
+    return {
+      message: "Exotel/Twilio Request Inspector",
+      count: CallController.history.length,
+      history: CallController.history.slice().reverse()
+    };
+  }
+
+  private recordHistory(req: any, res: any) {
+    CallController.history.push({
+      timestamp: new Date().toISOString(),
+      url: req.url,
+      method: req.method,
+      data: req.body || req.query,
+      response: res
+    });
+    if (CallController.history.length > 20) CallController.history.shift();
+  }
 
   @Post('simulate')
   async simulate(@Body() body: { text: string }) {
@@ -25,15 +46,13 @@ export class CallController {
   async handleTwilio(@Body() body: any) {
     const callerNumber = body.From || '';
     const bossNumber = process.env.BOSS_PHONE_NUMBER || '+918825492600';
-    
-    // Smart Indian Normalization for Boss Recognition
     const isBoss = this.normalizeNumber(callerNumber) === this.normalizeNumber(bossNumber);
-
     const callerText = body.SpeechResult || "Hello?";
     const context = isBoss ? "The Boss is calling." : `Incoming Call from ${callerNumber}.`;
     const aiResponse = await this.ai.processCall(`[Secretary Context] ${context} Caller says: ${callerText}`, isBoss);
-
-    return this.generateTwilioResponse(aiResponse.response);
+    const twilioRes = this.generateTwilioResponse(aiResponse.response);
+    this.recordHistory({ url: '/call/twilio', method: 'POST', body }, twilioRes);
+    return twilioRes;
   }
 
   // LEGACY EXOTEL HANDLER (FLOW BUILDER)
@@ -41,18 +60,14 @@ export class CallController {
   @HttpCode(200)
   async handleExotel(@Body() body: any, @Res() res: Response) {
     this.logger.log(`📢 EXOTEL POST HIT! Body: ${JSON.stringify(body)}`);
-    
     const callerNumber = body.From || body.CallFrom || '';
     const digits = body.Digits || '';
     const bossNumber = process.env.BOSS_PHONE_NUMBER || '+918825492600';
     const isBoss = this.normalizeNumber(callerNumber) === this.normalizeNumber(bossNumber);
-
     const input = body.SpeechResult || (digits ? `[Keypad Press: ${digits}]` : "START_CALL");
     const callId = body.CallSid || `exotel_${Date.now()}`;
     
-    // FIRE AND FORGET
     this.db.recordTurn(callId, { speaker: 'USER', content: input });
-
     const contextInput = input === "START_CALL" 
       ? "User just connected. Say 'Thanks for calling, I will connect you to AI Assistant'"
       : `[Secretary Context] Incoming Call (Exotel). Caller says: ${input}`;
@@ -61,11 +76,12 @@ export class CallController {
     this.db.recordTurn(callId, { speaker: 'ASSISTANT', content: aiResponse.response });
 
     res.setHeader('Content-Type', 'text/plain');
-    return res.status(200).send(aiResponse.response);
+    const responseBody = aiResponse.response;
+    this.recordHistory({ url: '/call/exotel', method: 'POST', body }, responseBody);
+    return res.status(200).send(responseBody);
   }
 
   @Post('exotel/')
-  @HttpCode(200)
   async handleExotelSlash(@Body() body: any, @Res() res: Response) {
     return this.handleExotel(body, res);
   }
@@ -90,13 +106,10 @@ export class CallController {
     const digits = body.Digits || '';
     const bossNumber = process.env.BOSS_PHONE_NUMBER || '+918825492600';
     const isBoss = this.normalizeNumber(callerNumber) === this.normalizeNumber(bossNumber);
-
     const input = body.SpeechResult || (digits ? `[Keypad Press: ${digits}]` : "START_CALL");
     const callId = body.CallSid || `exotel_${Date.now()}`;
 
-    // FIRE AND FORGET
     this.db.recordTurn(callId, { speaker: 'USER', content: input });
-
     const contextInput = input === "START_CALL" 
       ? "User just connected. Say 'Thanks for calling, I will connect you to AI Assistant'"
       : `[Secretary Context] Incoming Call (Exotel Dynamic). Caller says: ${input}`;
@@ -104,7 +117,6 @@ export class CallController {
     const aiResponse = await this.ai.processCall(contextInput, isBoss);
     this.db.recordTurn(callId, { speaker: 'ASSISTANT', content: aiResponse.response });
 
-    // WRAPPED & OMNI-KEY: Sending every possible schema (Flat, Parameters, and Custom shells)
     const payload = {
       "Status": 200,
       "gather_prompt": { "text": aiResponse.response },
@@ -118,11 +130,14 @@ export class CallController {
       "action": "gather"
     };
 
-    return {
+    const finalResponse = {
       ...payload,
       "Parameters": payload,
       "Custom": payload
     };
+
+    this.recordHistory({ url: '/call/exotel/dynamic', method: 'POST', body }, finalResponse);
+    return finalResponse;
   }
 
   @Post('exotel/dynamic/')
@@ -134,7 +149,6 @@ export class CallController {
   async handleExotelDynamicGet(@Query() query: any) {
     this.logger.log(`📢 EXOTEL DYNAMIC GET HIT!`);
     const intro = "Thanks for calling, I will connect you to AI Assistant";
-    
     const payload = {
       "Status": 200,
       "gather_prompt": { "text": intro },
@@ -148,11 +162,14 @@ export class CallController {
       "action": "gather"
     };
 
-    return {
+    const finalResponse = {
       ...payload,
       "Parameters": payload,
       "Custom": payload
     };
+
+    this.recordHistory({ url: '/call/exotel/dynamic', method: 'GET', query }, finalResponse);
+    return finalResponse;
   }
 
   @Get('exotel/dynamic/')
