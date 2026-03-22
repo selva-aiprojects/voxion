@@ -76,7 +76,7 @@ export default function Dashboard() {
   };
 
   const stopRecording = () => { mediaRecorderRef.current?.stop(); setIsRecording(false); setCallStatus('Session Active'); };
-  const simulateChat = (text: string) => { if (!text.trim()) return; setTranscription(prev => [...prev, { role: 'user', content: text }]); socketRef.current?.emit('audio-data', text); };
+  const simulateChat = (text: string) => { if (!text.trim()) return; socketRef.current?.emit('audio-data', text); };
   const deployCall = () => { setIsCalling(true); setCallStatus('Connecting...'); setTranscription([]); socketRef.current?.emit('start-call', { voice: selectedVoice }); };
   const terminateCall = () => { socketRef.current?.emit('end-call'); if (transcription.length === 0) setIsCalling(false); setCallStatus('Terminating...'); };
 
