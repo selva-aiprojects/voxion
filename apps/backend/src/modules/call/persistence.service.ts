@@ -12,7 +12,8 @@ export class PersistenceService {
       this.transcripts.set(callId, []);
     }
     this.transcripts.get(callId)!.push({ ...turn, timestamp: new Date() });
-    this.logger.log(`[DB] Recorded turn for ${callId}: ${turn.speaker} - ${turn.content.substring(0, 30)}...`);
+    const logContent = (turn.content || '').substring(0, 30);
+    this.logger.log(`[DB] Recorded turn for ${callId}: ${turn.speaker} - ${logContent}...`);
   }
 
   getTranscript(callId: string): any[] {

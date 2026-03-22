@@ -1,9 +1,12 @@
 import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
+import * as express from 'express';
 
 async function bootstrap() {
   const app = await NestFactory.create(AppModule);
-  app.enableCors(); // Needed for Socket.io from different port
+  app.enableCors();
+  app.use(express.json());
+  app.use(express.urlencoded({ extended: true }));
   await app.listen(process.env.PORT ?? 3001, '0.0.0.0');
 }
 bootstrap();
