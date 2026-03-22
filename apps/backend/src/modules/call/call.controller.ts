@@ -34,6 +34,7 @@ export class CallController {
     return this.generateTwilioResponse(aiResponse.response);
   }
 
+  // LEGACY EXOTEL HANDLER (FLOW BUILDER)
   @Post('exotel')
   @HttpCode(200)
   async handleExotel(@Body() body: any, @Res() res: Response) {
@@ -42,60 +43,42 @@ export class CallController {
     const bossNumber = process.env.BOSS_PHONE_NUMBER || '+918825492600';
     const isBoss = this.normalizeNumber(callerNumber) === this.normalizeNumber(bossNumber);
 
-    const input = body.SpeechResult || (digits ? `[Keypad Press: ${digits}]` : "Hello?");
+    const input = body.SpeechResult || (digits ? `[Keypad Press: ${digits}]` : "START_CALL");
     const callId = body.CallSid || `exotel_${Date.now()}`;
     
-    await this.db.recordTurn(callId, { speaker: 'USER', content: input });
+    // FIRE AND FORGET
+    this.db.recordTurn(callId, { speaker: 'USER', content: input });
 
-    const aiResponse = await this.ai.processCall(`[Secretary Context] Incoming Call (Exotel). Caller says: ${input}`, isBoss);
-    await this.db.recordTurn(callId, { speaker: 'ASSISTANT', content: aiResponse.response });
+    const contextInput = input === "START_CALL" 
+      ? "User just connected. Say 'Thanks for calling, I will connect you to AI Assistant'"
+      : `[Secretary Context] Incoming Call (Exotel). Caller says: ${input}`;
 
-    let nextStep = 'gather';
-    const responseLower = aiResponse.response.toLowerCase();
+    const aiResponse = await this.ai.processCall(contextInput, isBoss);
     
-    if (responseLower.includes('goodbye') || digits === '0') {
-      nextStep = 'hangup';
-      const summary = await this.ai.summarizeCall(this.db.getTranscript(callId));
-      await this.db.saveCallRecord({
-        callId,
-        caller_number: callerNumber,
-        summary: summary.summary,
-        sentiment: summary.sentiment,
-        follow_up: summary.follow_up
-      });
-    }
+    // FIRE AND FORGET
+    this.db.recordTurn(callId, { speaker: 'ASSISTANT', content: aiResponse.response });
 
-    // 200 OK -> Continue/Gather, 201 Created -> Goodbye/Hangup
-    // Standardize ON 200 OK for all successful flows to avoid "Anything Else" path disconnections
-    const statusCode = 200;
-    
-    // For Legacy Flow Builder, plain text response is often safer for ${CustomField1}
-    return res.status(statusCode).send(aiResponse.response);
+    res.setHeader('Content-Type', 'text/plain');
+    return res.status(200).send(aiResponse.response);
+  }
+
+  @Post('exotel/')
+  @HttpCode(200)
+  async handleExotelSlash(@Body() body: any, @Res() res: Response) {
+    return this.handleExotel(body, res);
   }
 
   @Get('exotel')
   async handleExotelGet(@Query() query: any, @Res() res: Response) {
-    const callerNumber = query.From || query.CallFrom || '';
-    const digits = query.Digits || query.digits || '';
-    const bossNumber = process.env.BOSS_PHONE_NUMBER || '+918825492600';
-    const isBoss = this.normalizeNumber(callerNumber) === this.normalizeNumber(bossNumber);
-
-    const input = query.SpeechResult || (digits ? `[Keypad Press: ${digits}]` : "START_CALL");
-    const callId = query.CallSid || `exotel_${Date.now()}`;
-
-    await this.db.recordTurn(callId, { speaker: 'USER', content: input });
-    
-    // Use the user's requested greeting for the START_CALL case
-    const contextInput = input === "START_CALL" 
-      ? "User just connected. Say 'Thanks for calling, I will connect you to AI Assistant'"
-      : `[Secretary Context] Incoming Call (Exotel). Caller says: ${input}`;
-      
-    const aiResponse = await this.ai.processCall(contextInput, isBoss);
-    await this.db.recordTurn(callId, { speaker: 'ASSISTANT', content: aiResponse.response });
-
-    return res.status(200).send(aiResponse.response);
+    return this.handleExotel(query, res);
   }
 
+  @Get('exotel/')
+  async handleExotelGetSlash(@Query() query: any, @Res() res: Response) {
+    return this.handleExotel(query, res);
+  }
+
+  // NEW CLEAN DYNAMIC ARCHITECTURE
   @Post('exotel/dynamic')
   @HttpCode(200)
   async handleExotelDynamic(@Body() body: any) {
@@ -104,14 +87,21 @@ export class CallController {
     const bossNumber = process.env.BOSS_PHONE_NUMBER || '+918825492600';
     const isBoss = this.normalizeNumber(callerNumber) === this.normalizeNumber(bossNumber);
 
-    const input = body.SpeechResult || (digits ? `[Keypad Press: ${digits}]` : "Hello?");
+    const input = body.SpeechResult || (digits ? `[Keypad Press: ${digits}]` : "START_CALL");
     const callId = body.CallSid || `exotel_${Date.now()}`;
 
-    await this.db.recordTurn(callId, { speaker: 'USER', content: input });
-    const aiResponse = await this.ai.processCall(`[Secretary Context] Incoming Call (Exotel Dynamic). Caller says: ${input}`, isBoss);
-    await this.db.recordTurn(callId, { speaker: 'ASSISTANT', content: aiResponse.response });
+    // FIRE AND FORGET
+    this.db.recordTurn(callId, { speaker: 'USER', content: input });
 
-    // Exotel Dynamic Parameter Format
+    const contextInput = input === "START_CALL" 
+      ? "User just connected. Say 'Thanks for calling, I will connect you to AI Assistant'"
+      : `[Secretary Context] Incoming Call (Exotel Dynamic). Caller says: ${input}`;
+
+    const aiResponse = await this.ai.processCall(contextInput, isBoss);
+    
+    // FIRE AND FORGET
+    this.db.recordTurn(callId, { speaker: 'ASSISTANT', content: aiResponse.response });
+
     return {
       gather_prompt: {
         text: aiResponse.response

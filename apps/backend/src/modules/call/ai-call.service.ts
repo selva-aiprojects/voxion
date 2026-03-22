@@ -44,19 +44,19 @@ export class AiCallService {
           : "You are a professional, helpful, and warm Indian AI assistant from Voxion.io. DYNAMIC LANGUAGE MIRRORING: Respond in the same language as the caller (Hindi, Tamil, etc.). Use a friendly Indian-English style where appropriate. Be super concise. Focus on scheduling and support.";
 
       const response = await this.openai.chat.completions.create({
-        model: 'gpt-4o',
+        model: 'gpt-4o-mini',
         messages: [
           { role: 'system', content: persona },
           { role: 'user', content: input }
         ],
-        max_tokens: 150
+        max_tokens: 100
       });
 
       const text = response.choices[0].message.content;
 
       return {
         id: `call_${Date.now()}`,
-        response: text,
+        response: text || 'I am sorry, I did not catch that.',
         sentiment: 'neutral',
         latency: '0.9s'
       };
@@ -88,7 +88,7 @@ export class AiCallService {
       }`;
 
       const response = await this.openai.chat.completions.create({
-        model: 'gpt-4o',
+        model: 'gpt-4o-mini',
         messages: [{ role: 'user', content: prompt }],
         response_format: { type: 'json_object' }
       });
