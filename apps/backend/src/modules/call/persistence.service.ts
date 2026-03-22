@@ -5,20 +5,26 @@ export class PersistenceService {
   private logger = new Logger('PersistenceService');
   private calls: any[] = [];
   private actions: any[] = [];
+  private transcripts: Map<string, any[]> = new Map();
 
-  async saveCallRecord(record: { 
-    caller_name?: string; 
-    summary: string; 
-    sentiment: string; 
-    follow_up?: any;
-    duration?: number;
-    recordingUrl?: string;
-  }) {
-    const callId = `call_${Date.now()}`;
-    const newRecord = { id: callId, ...record, createdAt: new Date() };
+  async recordTurn(callId: string, turn: { speaker: 'USER' | 'ASSISTANT'; content: string }) {
+    if (!this.transcripts.has(callId)) {
+      this.transcripts.set(callId, []);
+    }
+    this.transcripts.get(callId)!.push({ ...turn, timestamp: new Date() });
+    this.logger.log(`[DB] Recorded turn for ${callId}: ${turn.speaker} - ${turn.content.substring(0, 30)}...`);
+  }
+
+  getTranscript(callId: string): any[] {
+    return this.transcripts.get(callId) || [];
+  }
+
+  async saveCallRecord(record: any) {
+    const callId = record.callId || `call_${Date.now()}`;
+    const newRecord = { ...record, createdAt: new Date() };
     
     this.calls.push(newRecord);
-    this.logger.log(`[DB] Saved call record: ${callId} for ${record.caller_name || 'Unknown'}`);
+    this.logger.log(`[DB] Saved call record: ${callId}`);
 
     if (record.follow_up?.required) {
       const actionId = `act_${Date.now()}`;

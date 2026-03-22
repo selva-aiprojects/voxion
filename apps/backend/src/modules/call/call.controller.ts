@@ -42,24 +42,35 @@ export class CallController {
     const bossNumber = process.env.BOSS_PHONE_NUMBER || '+918825492600';
     const isBoss = this.normalizeNumber(callerNumber) === this.normalizeNumber(bossNumber);
 
-    let input = body.SpeechResult || (digits ? `[Keypad Press: ${digits}]` : "Hello?");
+    const input = body.SpeechResult || (digits ? `[Keypad Press: ${digits}]` : "Hello?");
+    const callId = body.CallSid || `exotel_${Date.now()}`;
+    
+    await this.db.recordTurn(callId, { speaker: 'USER', content: input });
+
     const aiResponse = await this.ai.processCall(`[Secretary Context] Incoming Call (Exotel). Caller says: ${input}`, isBoss);
+    await this.db.recordTurn(callId, { speaker: 'ASSISTANT', content: aiResponse.response });
 
     let nextStep = 'gather';
-    if (aiResponse.response.toLowerCase().includes('goodbye') || 
-        aiResponse.response.toLowerCase().includes('thank you') ||
-        digits === '0') {
+    const responseLower = aiResponse.response.toLowerCase();
+    
+    if (responseLower.includes('goodbye') || digits === '0') {
       nextStep = 'hangup';
-    } else if (digits === '1') {
-      nextStep = 'transfer';
+      const summary = await this.ai.summarizeCall(this.db.getTranscript(callId));
+      await this.db.saveCallRecord({
+        callId,
+        caller_number: callerNumber,
+        summary: summary.summary,
+        sentiment: summary.sentiment,
+        follow_up: summary.follow_up
+      });
     }
 
-    // If the request is from a basic Passthru block (indicated by specific headers or if we want to support it),
-    // we can use status codes to branch.
+    // 200 OK -> Continue/Gather, 201 Created -> Goodbye/Hangup
     const statusCode = nextStep === 'gather' ? 200 : 201;
-    
-    // Return Plain Text for Exotel %passthru_response% variable
-    return res.status(statusCode).send(aiResponse.response);
+    return res.status(statusCode).json({
+      CustomField1: aiResponse.response,
+      status: nextStep
+    });
   }
 
   @Get('exotel')
@@ -69,21 +80,64 @@ export class CallController {
     const bossNumber = process.env.BOSS_PHONE_NUMBER || '+918825492600';
     const isBoss = this.normalizeNumber(callerNumber) === this.normalizeNumber(bossNumber);
 
-    let input = query.SpeechResult || (digits ? `[Keypad Press: ${digits}]` : "Hello?");
+    const input = query.SpeechResult || (digits ? `[Keypad Press: ${digits}]` : "Hello?");
+    const callId = query.CallSid || `exotel_${Date.now()}`;
+
+    await this.db.recordTurn(callId, { speaker: 'USER', content: input });
     const aiResponse = await this.ai.processCall(`[Secretary Context] Incoming Call (Exotel). Caller says: ${input}`, isBoss);
+    await this.db.recordTurn(callId, { speaker: 'ASSISTANT', content: aiResponse.response });
 
     let nextStep = 'gather';
-    if (aiResponse.response.toLowerCase().includes('goodbye') || 
-        aiResponse.response.toLowerCase().includes('thank you') ||
-        digits === '0') {
+    const responseLower = aiResponse.response.toLowerCase();
+
+    if (responseLower.includes('goodbye') || digits === '0') {
       nextStep = 'hangup';
     }
 
-    // 200 OK triggers the "Success" path in Exotel Passthru
-    // 201 Created triggers the "Anything Else" path (Hangup/Transfer)
     const statusCode = nextStep === 'gather' ? 200 : 201;
-    
-    return res.status(statusCode).send(aiResponse.response);
+    return res.status(statusCode).json({
+      CustomField1: aiResponse.response,
+      status: nextStep
+    });
+  }
+
+  @Post('exotel/dynamic')
+  @HttpCode(200)
+  async handleExotelDynamic(@Body() body: any) {
+    const callerNumber = body.From || body.CallFrom || '';
+    const digits = body.Digits || '';
+    const bossNumber = process.env.BOSS_PHONE_NUMBER || '+918825492600';
+    const isBoss = this.normalizeNumber(callerNumber) === this.normalizeNumber(bossNumber);
+
+    const input = body.SpeechResult || (digits ? `[Keypad Press: ${digits}]` : "Hello?");
+    const callId = body.CallSid || `exotel_${Date.now()}`;
+
+    await this.db.recordTurn(callId, { speaker: 'USER', content: input });
+    const aiResponse = await this.ai.processCall(`[Secretary Context] Incoming Call (Exotel Dynamic). Caller says: ${input}`, isBoss);
+    await this.db.recordTurn(callId, { speaker: 'ASSISTANT', content: aiResponse.response });
+
+    // Exotel Dynamic Parameter Format
+    return {
+      gather_prompt: {
+        text: aiResponse.response
+      },
+      max_input_digits: 10,
+      finish_key: "#",
+      timeout: 4
+    };
+  }
+
+  @Get('exotel/dynamic')
+  async handleExotelDynamicGet(@Query() query: any) {
+    // Treat GET as the initial "Wake up" call for the dynamic applet
+    return {
+      gather_prompt: {
+        text: "Connected to Voxion AI. How can I help you?"
+      },
+      max_input_digits: 10,
+      finish_key: "#",
+      timeout: 4
+    };
   }
 
   private generateTwilioResponse(text: string) {
