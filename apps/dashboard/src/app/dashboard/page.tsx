@@ -66,47 +66,58 @@ export default function Dashboard() {
   const startRecording = async () => {
     try {
       const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
+      const mediaRecorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      const chunks: Blob[] = [];
       mediaRecorderRef.current = mediaRecorder;
-      mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0 && socketRef.current) socketRef.current.emit('audio-data', e.data); };
-      mediaRecorder.start(1000);
+      mediaRecorder.ondataavailable = (e) => { if (e.data.size > 0) chunks.push(e.data); };
+      mediaRecorder.onstop = () => {
+        const fullBlob = new Blob(chunks, { type: 'audio/webm' });
+        if (socketRef.current) socketRef.current.emit('audio-data', fullBlob);
+        setCallStatus('Analyzing Voice...');
+      };
+      mediaRecorder.start();
       setIsRecording(true);
-      setCallStatus('Streaming Voice');
+      setCallStatus('Listening...');
     } catch (err) { alert('Mic access required for live simulation.'); }
   };
 
-  const stopRecording = () => { mediaRecorderRef.current?.stop(); setIsRecording(false); setCallStatus('Session Active'); };
+  const stopRecording = () => { mediaRecorderRef.current?.stop(); setIsRecording(false); };
   const simulateChat = (text: string) => { if (!text.trim()) return; socketRef.current?.emit('audio-data', text); };
   const deployCall = () => { setIsCalling(true); setCallStatus('Connecting...'); setTranscription([]); socketRef.current?.emit('start-call', { voice: selectedVoice }); };
   const terminateCall = () => { socketRef.current?.emit('end-call'); if (transcription.length === 0) setIsCalling(false); setCallStatus('Terminating...'); };
 
   return (
-    <div className="flex h-screen bg-[#f1f5f9] text-slate-900 font-sans antialiased overflow-hidden selection:bg-indigo-100">
-      {/* Sidebar */}
-      <div className="w-64 border-r border-slate-200 bg-[#0f172a] text-slate-400 flex flex-col pt-8 z-20">
-        <div className="px-8 mb-12 flex items-center gap-3">
-            <img src="/logo.png" alt="Voxion Logo" className="w-8 h-8 rounded-lg shadow-lg shadow-indigo-500/20" />
-            <span className="text-white font-bold tracking-tight text-xl italic uppercase font-sans">Voxion</span>
+    <div className="flex h-screen bg-[#f8fafc] text-slate-900 font-sans antialiased overflow-hidden selection:bg-indigo-100 font-outfit">
+      {/* Premium Sidebar */}
+      <div className="w-72 border-r border-slate-200 bg-[#0f172a] text-slate-400 flex flex-col pt-10 z-20 shadow-2xl">
+        <div className="px-10 mb-16 flex items-center gap-4 group cursor-pointer">
+            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-500 to-indigo-700 flex items-center justify-center shadow-lg shadow-indigo-500/20 group-hover:scale-110 transition-transform">
+              <img src="/logo.png" alt="Voxion Logo" className="w-6 h-6 invert brightness-200" />
+            </div>
+            <div className="flex flex-col">
+              <span className="text-white font-black tracking-[0.3em] text-xl font-outfit leading-none mb-1">VOXION</span>
+              <span className="text-[10px] font-black text-indigo-400 uppercase tracking-widest leading-none">Intelligence Engine</span>
+            </div>
         </div>
-        <nav className="flex-1 px-4 space-y-1">
+        <nav className="flex-1 px-4 space-y-2">
           {[
-            { id: 'assistants', name: 'Workflows' },
-            { id: 'calls', name: 'Call History' },
-            { id: 'actions', name: 'Follow-ups' }
+            { id: 'assistants', name: 'Neural Workflows' },
+            { id: 'calls', name: 'Intelligence Logs' },
+            { id: 'actions', name: 'Predictive Tasks' }
           ].map(item => (
-            <div key={item.id} onClick={() => setActiveView(item.id as ViewType)} className={`px-4 py-3 rounded-xl cursor-pointer flex items-center gap-3 transition-all duration-200 ${activeView === item.id ? 'text-white bg-slate-800 shadow-sm' : 'hover:text-slate-200 hover:bg-slate-800/40'}`}>
-              <span className="text-sm font-semibold">{item.name}</span>
+            <div key={item.id} onClick={() => setActiveView(item.id as ViewType)} className={`px-6 py-4 rounded-2xl cursor-pointer flex items-center gap-4 transition-all duration-300 ${activeView === item.id ? 'text-white bg-slate-800/80 shadow-lg border-l-4 border-indigo-500 sidebar-active' : 'hover:text-slate-200 hover:bg-white/5'}`}>
+              <span className="text-sm font-bold tracking-tight">{item.name}</span>
             </div>
           ))}
         </nav>
       </div>
 
-      {/* Main Panel */}
+      {/* Primary Command Deck */}
       <div className="flex-1 flex flex-col bg-slate-50">
-        <header className="h-20 border-b border-slate-200 bg-white/80 backdrop-blur-sm px-10 flex items-center justify-between z-10">
+        <header className="h-24 border-b border-slate-200 bg-white/60 backdrop-blur-xl px-12 flex items-center justify-between z-10 glass-card">
             <div>
-                <h1 className="text-xs font-black text-slate-400 uppercase tracking-widest leading-none mb-1">Command Control</h1>
-                <p className="text-lg font-bold text-slate-900">Voxion AI Engine_v2.0</p>
+                <h1 className="text-[10px] font-black text-indigo-500 uppercase tracking-[0.4em] leading-none mb-2">Primary Node System</h1>
+                <p className="text-2xl font-black text-slate-900 tracking-tight">Command Control v2.4</p>
             </div>
             {/* Intelligence Bar */}
             <div className="flex gap-8 items-center mr-10">
