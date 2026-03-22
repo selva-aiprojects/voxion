@@ -10,8 +10,9 @@
 | Layer | Technology | Rationale |
 | :--- | :--- | :--- |
 | **Monorepo Engine** | **Turborepo** | Enables sharing of types and logic between `apps/` and `packages/` with high-performance caching. |
-| **Backend Framework** | **NestJS (Node.js)** | Chosen for its enterprise-grade modularity, Dependency Injection, and native support for WebSockets (Gateways). |
-| **Frontend Framework** | **Next.js 15 (App Router)** | Industry-standard for SEO, fast rendering, and optimized Client Side Components for the diagnostic console. |
+| **Backend Framework** | **NestJS (Node.js)** | Chosen for its enterprise-grade modularity, Dependency Injection, and native support for WebSockets. |
+| **Telephony Bridge** | **Multi-Provider (Twilio/Exotel)** | **Voxion** is now provider-agnostic, supporting global (Twilio) and local Indian (Exotel/Kaleyra) traffic. |
+| **Frontend Framework** | **Next.js 15** | Industry-standard for SEO, fast rendering, and optimized console overlays. |
 | **Real-time Comms** | **Socket.io** | Provides bi-directional, persistent connection between the user's mic and the AI logic. |
 | **STT Engine** | **OpenAI Whisper-1** | High-fidelity transcription even with accents (e.g., Indian English) and background noise. |
 | **Reasoning Engine** | **GPT-4o (Omni)** | Chosen for its ultra-fast reasoning and multimodal capability for future Voice-to-Voice latency reduction. |
