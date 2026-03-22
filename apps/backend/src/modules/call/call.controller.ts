@@ -43,8 +43,11 @@ export class CallController {
     const callerText = body.Digits || body.SpeechResult || "Hello?";
     const aiResponse = await this.ai.processCall(`[Secretary Context] Incoming Call (Exotel). Caller says: ${callerText}`, isBoss);
 
-    // Exotel uses a similar XML structure to Twilio for responses
-    return `<Response><Say voice="female">${aiResponse.response}</Say><Record action="/call/exotel" method="POST" maxLength="30" /></Response>`;
+    // Exotel JSON Passthrough Format
+    return {
+      "Action": "Say",
+      "Say": aiResponse.response
+    };
   }
 
   private generateTwilioResponse(text: string) {
