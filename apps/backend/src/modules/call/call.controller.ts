@@ -65,6 +65,7 @@ export class CallController {
   }
 
   @Post('exotel/')
+  @HttpCode(200)
   async handleExotelSlash(@Body() body: any, @Res() res: Response) {
     return this.handleExotel(body, res);
   }
@@ -84,7 +85,7 @@ export class CallController {
   @Post('exotel/dynamic')
   @HttpCode(200)
   async handleExotelDynamic(@Body() body: any) {
-    this.logger.log(`📢 EXOTEL DYNAMIC POST HIT!`);
+    this.logger.log(`📢 EXOTEL DYNAMIC POST HIT! Body: ${JSON.stringify(body)}`);
     const callerNumber = body.From || body.CallFrom || '';
     const digits = body.Digits || '';
     const bossNumber = process.env.BOSS_PHONE_NUMBER || '+918825492600';
@@ -103,13 +104,17 @@ export class CallController {
     const aiResponse = await this.ai.processCall(contextInput, isBoss);
     this.db.recordTurn(callId, { speaker: 'ASSISTANT', content: aiResponse.response });
 
+    // OMNI-KEY JSON: Providing every possible key Exotel might look for across versions/regions
     return {
-      gather_prompt: {
-        text: aiResponse.response
-      },
-      max_input_digits: 10,
-      finish_key: "#",
-      timeout: 4
+      "gather_prompt": { "text": aiResponse.response },
+      "Prompt": aiResponse.response,
+      "max_input_digits": 10,
+      "MaxDigits": 10,
+      "timeout": 5,
+      "Timeout": 5,
+      "finish_key": "#",
+      "FinishKey": "#",
+      "action": "gather"
     };
   }
 
@@ -121,13 +126,18 @@ export class CallController {
   @Get('exotel/dynamic')
   async handleExotelDynamicGet(@Query() query: any) {
     this.logger.log(`📢 EXOTEL DYNAMIC GET HIT!`);
+    const intro = "Thanks for calling, I will connect you to AI Assistant";
+    
     return {
-      gather_prompt: {
-        text: "Thanks for calling, I will connect you to AI Assistant"
-      },
-      max_input_digits: 10,
-      finish_key: "#",
-      timeout: 4
+      "gather_prompt": { "text": intro },
+      "Prompt": intro,
+      "max_input_digits": 10,
+      "MaxDigits": 10,
+      "timeout": 5,
+      "Timeout": 5,
+      "finish_key": "#",
+      "FinishKey": "#",
+      "action": "gather"
     };
   }
 
