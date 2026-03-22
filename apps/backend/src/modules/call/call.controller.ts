@@ -140,6 +140,47 @@ export class CallController {
     return finalResponse;
   }
 
+  // DEFINITIVE EXOTEL XML HANDLER (ROCK-SOLID)
+  @Post('exotel-xml')
+  @HttpCode(200)
+  async handleExotelXml(@Body() body: any, @Res() res: Response) {
+    this.logger.log(`📢 EXOTEL XML HIT! Body: ${JSON.stringify(body)}`);
+    const callerNumber = body.From || body.CallFrom || '';
+    const digits = body.Digits || '';
+    const bossNumber = process.env.BOSS_PHONE_NUMBER || '+918825492600';
+    const isBoss = this.normalizeNumber(callerNumber) === this.normalizeNumber(bossNumber);
+    
+    // Explicit Speech Result or initial start
+    const input = body.SpeechResult || (digits ? `[Keypad: ${digits}]` : "START_CALL");
+    const callId = body.CallSid || `exotel_xml_${Date.now()}`;
+
+    const contextInput = input === "START_CALL"
+      ? "User just connected. Say 'Thanks for calling, I will connect you to AI Assistant'"
+      : `[Secretary Context] Exotel XML Flow. Caller says: ${input}`;
+
+    const aiResponse = await this.ai.processCall(contextInput, isBoss);
+    
+    // Build definitive ExML (XML) response
+    const xml = `<?xml version="1.0" encoding="UTF-8"?>
+      <Response>
+        <Gather input="speech" action="/call/exotel-xml" method="POST" timeout="3" language="en-IN">
+          <Say>${aiResponse.response}</Say>
+        </Gather>
+        <Redirect>/call/exotel-xml</Redirect>
+      </Response>`;
+
+    res.setHeader('Content-Type', 'text/xml');
+    this.recordHistory({ url: '/call/exotel-xml', method: 'POST', body }, xml);
+    return res.status(200).send(xml);
+  }
+
+  @Get('exotel-xml')
+  @HttpCode(200)
+  async handleExotelXmlGet(@Body() body: any, @Res() res: Response) {
+    // Handle the initial hit if it comes as GET
+    return this.handleExotelXml(body, res);
+  }
+
   @Post('exotel/dynamic/')
   async handleExotelDynamicSlash(@Body() body: any) {
     return this.handleExotelDynamic(body);
