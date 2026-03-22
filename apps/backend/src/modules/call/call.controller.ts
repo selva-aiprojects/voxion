@@ -66,11 +66,11 @@ export class CallController {
     }
 
     // 200 OK -> Continue/Gather, 201 Created -> Goodbye/Hangup
-    const statusCode = nextStep === 'gather' ? 200 : 201;
-    return res.status(statusCode).json({
-      CustomField1: aiResponse.response,
-      status: nextStep
-    });
+    // Standardize ON 200 OK for all successful flows to avoid "Anything Else" path disconnections
+    const statusCode = 200;
+    
+    // For Legacy Flow Builder, plain text response is often safer for ${CustomField1}
+    return res.status(statusCode).send(aiResponse.response);
   }
 
   @Get('exotel')
@@ -80,25 +80,20 @@ export class CallController {
     const bossNumber = process.env.BOSS_PHONE_NUMBER || '+918825492600';
     const isBoss = this.normalizeNumber(callerNumber) === this.normalizeNumber(bossNumber);
 
-    const input = query.SpeechResult || (digits ? `[Keypad Press: ${digits}]` : "Hello?");
+    const input = query.SpeechResult || (digits ? `[Keypad Press: ${digits}]` : "START_CALL");
     const callId = query.CallSid || `exotel_${Date.now()}`;
 
     await this.db.recordTurn(callId, { speaker: 'USER', content: input });
-    const aiResponse = await this.ai.processCall(`[Secretary Context] Incoming Call (Exotel). Caller says: ${input}`, isBoss);
+    
+    // Use the user's requested greeting for the START_CALL case
+    const contextInput = input === "START_CALL" 
+      ? "User just connected. Say 'Thanks for calling, I will connect you to AI Assistant'"
+      : `[Secretary Context] Incoming Call (Exotel). Caller says: ${input}`;
+      
+    const aiResponse = await this.ai.processCall(contextInput, isBoss);
     await this.db.recordTurn(callId, { speaker: 'ASSISTANT', content: aiResponse.response });
 
-    let nextStep = 'gather';
-    const responseLower = aiResponse.response.toLowerCase();
-
-    if (responseLower.includes('goodbye') || digits === '0') {
-      nextStep = 'hangup';
-    }
-
-    const statusCode = nextStep === 'gather' ? 200 : 201;
-    return res.status(statusCode).json({
-      CustomField1: aiResponse.response,
-      status: nextStep
-    });
+    return res.status(200).send(aiResponse.response);
   }
 
   @Post('exotel/dynamic')
@@ -129,15 +124,20 @@ export class CallController {
 
   @Get('exotel/dynamic')
   async handleExotelDynamicGet(@Query() query: any) {
-    // Treat GET as the initial "Wake up" call for the dynamic applet
     return {
       gather_prompt: {
-        text: "Connected to Voxion AI. How can I help you?"
+        text: "Thanks for calling, I will connect you to AI Assistant"
       },
       max_input_digits: 10,
       finish_key: "#",
       timeout: 4
     };
+  }
+
+  @Get('debug')
+  @HttpCode(200)
+  async debug() {
+    return "Backend is alive and ready for Exotel!";
   }
 
   private generateTwilioResponse(text: string) {
