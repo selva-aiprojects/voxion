@@ -1,5 +1,5 @@
 import { Controller, Post, Get, Body, HttpCode, Query, Res } from '@nestjs/common';
-import { Response } from 'express';
+import type { Response } from 'express';
 import { AiCallService } from './ai-call.service';
 import { PersistenceService } from './persistence.service';
 
