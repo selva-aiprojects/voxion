@@ -1,10 +1,12 @@
-import { Controller, Post, Get, Body, HttpCode, Query, Res } from '@nestjs/common';
+import { Controller, Post, Get, Body, HttpCode, Query, Res, Logger } from '@nestjs/common';
 import type { Response } from 'express';
 import { AiCallService } from './ai-call.service';
 import { PersistenceService } from './persistence.service';
 
 @Controller('call')
 export class CallController {
+  private readonly logger = new Logger('CallController');
+
   constructor(
     private readonly ai: AiCallService,
     private readonly db: PersistenceService
@@ -38,6 +40,8 @@ export class CallController {
   @Post('exotel')
   @HttpCode(200)
   async handleExotel(@Body() body: any, @Res() res: Response) {
+    this.logger.log(`📢 EXOTEL POST HIT! Body: ${JSON.stringify(body)}`);
+    
     const callerNumber = body.From || body.CallFrom || '';
     const digits = body.Digits || '';
     const bossNumber = process.env.BOSS_PHONE_NUMBER || '+918825492600';
@@ -54,8 +58,6 @@ export class CallController {
       : `[Secretary Context] Incoming Call (Exotel). Caller says: ${input}`;
 
     const aiResponse = await this.ai.processCall(contextInput, isBoss);
-    
-    // FIRE AND FORGET
     this.db.recordTurn(callId, { speaker: 'ASSISTANT', content: aiResponse.response });
 
     res.setHeader('Content-Type', 'text/plain');
@@ -63,13 +65,13 @@ export class CallController {
   }
 
   @Post('exotel/')
-  @HttpCode(200)
   async handleExotelSlash(@Body() body: any, @Res() res: Response) {
     return this.handleExotel(body, res);
   }
 
   @Get('exotel')
   async handleExotelGet(@Query() query: any, @Res() res: Response) {
+    this.logger.log(`📢 EXOTEL GET HIT! Query: ${JSON.stringify(query)}`);
     return this.handleExotel(query, res);
   }
 
@@ -82,6 +84,7 @@ export class CallController {
   @Post('exotel/dynamic')
   @HttpCode(200)
   async handleExotelDynamic(@Body() body: any) {
+    this.logger.log(`📢 EXOTEL DYNAMIC POST HIT!`);
     const callerNumber = body.From || body.CallFrom || '';
     const digits = body.Digits || '';
     const bossNumber = process.env.BOSS_PHONE_NUMBER || '+918825492600';
@@ -98,8 +101,6 @@ export class CallController {
       : `[Secretary Context] Incoming Call (Exotel Dynamic). Caller says: ${input}`;
 
     const aiResponse = await this.ai.processCall(contextInput, isBoss);
-    
-    // FIRE AND FORGET
     this.db.recordTurn(callId, { speaker: 'ASSISTANT', content: aiResponse.response });
 
     return {
@@ -114,6 +115,7 @@ export class CallController {
 
   @Get('exotel/dynamic')
   async handleExotelDynamicGet(@Query() query: any) {
+    this.logger.log(`📢 EXOTEL DYNAMIC GET HIT!`);
     return {
       gather_prompt: {
         text: "Thanks for calling, I will connect you to AI Assistant"
