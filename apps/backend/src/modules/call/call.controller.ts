@@ -1,4 +1,4 @@
-import { Controller, Post, Get, Body } from '@nestjs/common';
+import { Controller, Post, Get, Body, HttpCode } from '@nestjs/common';
 import { AiCallService } from './ai-call.service';
 import { PersistenceService } from './persistence.service';
 
@@ -30,7 +30,7 @@ export class CallController {
     const context = isBoss ? "The Boss is calling." : `Incoming Call from ${callerNumber}.`;
     const aiResponse = await this.ai.processCall(`[Secretary Context] ${context} Caller says: ${callerText}`, isBoss);
 
-    return this.generateTwilioResponse(aiResponse.content);
+    return this.generateTwilioResponse(aiResponse.response);
   }
 
   @Post('exotel')
@@ -44,7 +44,7 @@ export class CallController {
     const aiResponse = await this.ai.processCall(`[Secretary Context] Incoming Call (Exotel). Caller says: ${callerText}`, isBoss);
 
     // Exotel uses a similar XML structure to Twilio for responses
-    return `<Response><Say voice="female">${aiResponse.content}</Say><Record action="/call/exotel" method="POST" maxLength="30" /></Response>`;
+    return `<Response><Say voice="female">${aiResponse.response}</Say><Record action="/call/exotel" method="POST" maxLength="30" /></Response>`;
   }
 
   private generateTwilioResponse(text: string) {
