@@ -113,6 +113,11 @@ export class CallController {
     };
   }
 
+  @Post('exotel/dynamic/')
+  async handleExotelDynamicSlash(@Body() body: any) {
+    return this.handleExotelDynamic(body);
+  }
+
   @Get('exotel/dynamic')
   async handleExotelDynamicGet(@Query() query: any) {
     this.logger.log(`📢 EXOTEL DYNAMIC GET HIT!`);
@@ -124,6 +129,11 @@ export class CallController {
       finish_key: "#",
       timeout: 4
     };
+  }
+
+  @Get('exotel/dynamic/')
+  async handleExotelDynamicGetSlash(@Query() query: any) {
+    return this.handleExotelDynamicGet(query);
   }
 
   @Get('debug')
